@@ -9,6 +9,6 @@ package com.vodafone.dr.parsers;
  *
  * @author eamrela
  */
-public class ATNParser {
-    
+public enum Element {
+    ALL,INTERNAL_CELL,FACH,RACH,PCH,HSDSCH,IUBLINK,COVERAGE,EXTERNAL_GSM_CELL,SAC,UTRAN_RELATIONS,GSM_RELATIONS
 }

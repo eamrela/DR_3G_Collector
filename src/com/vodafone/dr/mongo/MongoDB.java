@@ -20,8 +20,12 @@ public class MongoDB {
     private static MongoDatabase database;
     private static MongoCollection<Document> utranCellCollection;
     private static MongoCollection<Document> iubLinkCollection;
-    private static MongoCollection<Document> coverageRelationCollection;
     private static MongoCollection<Document> externalGsmCellCollection;
+    private static MongoCollection<Document> sacCollection;
+    private static MongoCollection<Document> coverageRelationCollection;
+    private static MongoCollection<Document> utranRelationCollection;
+    private static MongoCollection<Document> gsmRelationCollection;
+    private static MongoCollection<Document> externalUtranCellCollection;
 
     private static final Block<Document> PRINTBLOCK = new Block<Document>() {
                 @Override
@@ -38,12 +42,37 @@ public class MongoDB {
         utranCellCollection = database.getCollection("utranCell"); 
         iubLinkCollection = database.getCollection("iubLink"); 
         coverageRelationCollection = database.getCollection("coverageRelation"); 
+        utranRelationCollection = database.getCollection("utranRelation"); 
+        gsmRelationCollection = database.getCollection("gsmRelation"); 
         externalGsmCellCollection = database.getCollection("externalGsmCell"); 
+        externalUtranCellCollection = database.getCollection("externalUtranCell"); 
+        sacCollection = database.getCollection("sac"); 
         
     }
 
     //<editor-fold defaultstate="collapsed" desc="Setters/Getters">
 
+    public static MongoCollection<Document> getGsmRelationCollection() {
+        return gsmRelationCollection;
+    }
+
+    public static MongoCollection<Document> getUtranRelationCollection() {
+        return utranRelationCollection;
+    }
+
+    public static MongoCollection<Document> getExternalUtranCellCollection() {
+        return externalUtranCellCollection;
+    }
+
+   
+
+    
+    public static MongoCollection<Document> getSacCollection() {
+        return sacCollection;
+    }
+
+    
+    
     public static MongoCollection<Document> getExternalGsmCellCollection() {
         return externalGsmCellCollection;
     }
