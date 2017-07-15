@@ -43,6 +43,10 @@ public class ScriptGenerator {
         builder.append(generateCreationOnAllNetwork_ExternalCells(siteName,sourceRNC,targetRNC)).append("\n");
         builder.append("#####       Create Relations on all Network     ####").append("\n");
         builder.append(generateCreationOnAllNetwork_Relations(siteName,sourceRNC,targetRNC)).append("\n");
+        builder.append("#####       Create External Cells Target RNC     ####").append("\n");
+        builder.append(generateCreationOnTarget_ExternalCells(siteName,sourceRNC,targetRNC)).append("\n");
+        builder.append("#####       Create External Relations on Target RNC     ####").append("\n");
+        builder.append(generateCreationOnTarget_Relations_external(siteName,sourceRNC,targetRNC)).append("\n");
         builder.append("#########################################\n\n");
         
         return builder.toString();
@@ -577,7 +581,7 @@ public class ScriptGenerator {
         return script;
     }
     
-     public static String generateCreationOnAllNetwork_Relations(String siteName,String sourceRNC,String targetRNC){
+    public static String generateCreationOnAllNetwork_Relations(String siteName,String sourceRNC,String targetRNC){
         FindIterable<Document> utranRelations = MongoDB.getUtranRelationCollection().find(
                 and(Filters.regex("utranCellRef", ".*"+siteName+".*"),
                    Filters.not(Filters.eq("RNC", sourceRNC))));
@@ -608,39 +612,122 @@ public class ScriptGenerator {
     }
     
      // Relations Method on Target
-     public static String generateRelationCreationOnTargetRNC(String siteName,String sourceRNC,String targetRNC){
+    public static String generateCreationOnTarget_ExternalCells(String siteName,String sourceRNC,String targetRNC){
         FindIterable<Document> externalUtranCells = MongoDB.getExternalUtranCellCollection().find(
-                and(Filters.regex("_id", ".*"+siteName+".*"),
-                   Filters.not(Filters.eq("RNC", sourceRNC))));
+                and(Filters.regex("reservedBy", ".*UtranCell="+siteName+".*"),
+                   Filters.eq("RNC", sourceRNC)));
         String script = "";
         int count = 0;
         for(Document externalUtranCell : externalUtranCells){
+            if(!externalUtranCell.get("_id").toString().contains(targetRNC)){
+            //<editor-fold defaultstate="collapsed" desc="comment">
             count++;
-            System.out.println(externalUtranCell.get("RNC"));
+            script +=   "crn RncFunction=1,"+externalUtranCell.get("_id").toString().replaceAll(externalUtranCell.get("RNC")+"_", "")+"\n" +
+                        "agpsEnabled "+externalUtranCell.get("agpsEnabled")+"\n" +
+                        "cId "+externalUtranCell.get("cId")+"\n" +
+                        "cellCapability hsdschSupport="+((Document)externalUtranCell.get("cellCapability")).get("hsdschSupport")+
+                        ",edchSupport="+((Document)externalUtranCell.get("cellCapability")).get("edchSupport")+
+                        ",edchTti2Support="+((Document)externalUtranCell.get("cellCapability")).get("edchTti2Support")+
+                        ",enhancedL2Support="+((Document)externalUtranCell.get("cellCapability")).get("enhancedL2Support")+
+                        ",fdpchSupport="+((Document)externalUtranCell.get("cellCapability")).get("fdpchSupport")+
+                        ",cpcSupport="+((Document)externalUtranCell.get("cellCapability")).get("cpcSupport")+
+                        ",qam64MimoSupport="+((Document)externalUtranCell.get("cellCapability")).get("qam64MimoSupport")+"\n" +
+                        "hsAqmCongCtrlSpiSupport "+externalUtranCell.get("hsAqmCongCtrlSpiSupport")+"\n" +
+                        "hsAqmCongCtrlSupport "+externalUtranCell.get("hsAqmCongCtrlSupport")+"\n" +
+                        "individualOffset "+externalUtranCell.get("individualOffset")+"\n" +
+                        "lac "+externalUtranCell.get("lac")+"\n" +
+                        "maxTxPowerUl "+externalUtranCell.get("maxTxPowerUl")+"\n" +
+                        "primaryCpichPower "+externalUtranCell.get("primaryCpichPower")+"\n" +
+                        "primaryScramblingCode "+externalUtranCell.get("primaryScramblingCode")+"\n" +
+                        "qQualMin "+externalUtranCell.get("qQualMin")+"\n" +
+                        "qRxLevMin "+externalUtranCell.get("qRxLevMin")+"\n" +
+                        "rac "+externalUtranCell.get("rac")+"\n" +
+                        "reportingRange1a "+externalUtranCell.get("reportingRange1a")+"\n" +
+                        "reportingRange1b "+externalUtranCell.get("reportingRange1b")+"\n" +
+                        "timeToTrigger1a "+externalUtranCell.get("timeToTrigger1a")+"\n" +
+                        "timeToTrigger1b "+externalUtranCell.get("timeToTrigger1b")+"\n" +
+                        "transmissionScheme "+externalUtranCell.get("transmissionScheme")+"\n" +
+                        "uarfcnDl "+externalUtranCell.get("uarfcnDl")+"\n" +
+                        "uarfcnUl "+externalUtranCell.get("uarfcnUl")+"\n" +
+                        "userLabel "+externalUtranCell.get("userLabel")+"-1\n" +
+                        "end\n\n";
+            //</editor-fold>
+            }
+        
         }
         
         script = "####      Total MOs: "+count+"      ####\n"+script;
         return script;
     }
     
-    public static String generateExternalCellsOnAllNetwork(String siteName,String sourceRNC,String targetRNC){
-        FindIterable<Document> externalUtranCells = MongoDB.getExternalUtranCellCollection().find(
-                and(Filters.regex("_id", ".*"+siteName+".*"),
-                   Filters.not(Filters.eq("RNC", sourceRNC))));
+    public static String generateCreationOnTarget_Relations_external(String siteName,String sourceRNC,String targetRNC){
+        FindIterable<Document> utranRelations = MongoDB.getUtranRelationCollection().find(
+                and(Filters.regex("_id", ".*UtranCell="+siteName+".*"),
+                   Filters.eq("RNC", sourceRNC)));
         String script = "";
         int count = 0;
-        for(Document externalUtranCell : externalUtranCells){
+        script += "## Execute on RNC: "+targetRNC+"\n";
+        for(Document utranRelation : utranRelations){
+            if(utranRelation.get("utranCellRef").toString().contains("ExternalUtranCell=")){
+            //<editor-fold defaultstate="collapsed" desc="comment">
             count++;
-            System.out.println(externalUtranCell.get("RNC"));
+            script +=   "crn RncFunction=1,"+utranRelation.get("UtranRelationId")+"\n" +
+                        "hcsSib11Config hcsPrio="+((Document)utranRelation.get("hcsSib11Config")).get("hcsPrio")+
+                         ",qHcs="+((Document)utranRelation.get("hcsSib11Config")).get("qHcs")+
+                        ",penaltyTime="+((Document)utranRelation.get("hcsSib11Config")).get("penaltyTime")+
+                        ",temporaryOffset1="+((Document)utranRelation.get("hcsSib11Config")).get("temporaryOffset1")+
+                        ",temporaryOffset2="+((Document)utranRelation.get("hcsSib11Config")).get("temporaryOffset2")+"\n" +
+                        "loadSharingCandidate  "+utranRelation.get("loadSharingCandidate")+"\n" +
+                        "mobilityRelationType  "+utranRelation.get("mobilityRelationType")+"\n" +
+                        "qOffset1sn "+utranRelation.get("qOffset1sn")+"\n" +
+                        "qOffset2sn "+utranRelation.get("qOffset2sn")+"\n" +
+                        "selectionPriority "+utranRelation.get("selectionPriority")+"\n" +
+                        "utranCellRef "+utranRelation.get("utranCellRef")+"\n" +
+                        "end\n\n";
+            //</editor-fold>
+            }
         }
         
         script = "####      Total MOs: "+count+"      ####\n"+script;
         return script;
     }
+    
+    public static String generateCreationOnTarget_RelationsAndExternalCells_Internal(String siteName,String sourceRNC,String targetRNC){
+        FindIterable<Document> utranRelations = MongoDB.getUtranRelationCollection().find(
+                and(Filters.regex("_id", ".*UtranCell="+siteName+".*"),
+                   Filters.eq("RNC", sourceRNC)));
+        String script = "";
+        int count = 0;
+        script += "## Execute on RNC: "+targetRNC+"\n";
+        for(Document utranRelation : utranRelations){
+            if(!utranRelation.get("utranCellRef").toString().contains("ExternalUtranCell=")){
+            //<editor-fold defaultstate="collapsed" desc="Relation Creation">
+            count++;
+            script +=   "crn RncFunction=1,"+utranRelation.get("UtranRelationId")+"\n" +
+                        "hcsSib11Config hcsPrio="+((Document)utranRelation.get("hcsSib11Config")).get("hcsPrio")+
+                         ",qHcs="+((Document)utranRelation.get("hcsSib11Config")).get("qHcs")+
+                        ",penaltyTime="+((Document)utranRelation.get("hcsSib11Config")).get("penaltyTime")+
+                        ",temporaryOffset1="+((Document)utranRelation.get("hcsSib11Config")).get("temporaryOffset1")+
+                        ",temporaryOffset2="+((Document)utranRelation.get("hcsSib11Config")).get("temporaryOffset2")+"\n" +
+                        "loadSharingCandidate  "+utranRelation.get("loadSharingCandidate")+"\n" +
+                        "mobilityRelationType  "+utranRelation.get("mobilityRelationType")+"\n" +
+                        "qOffset1sn "+utranRelation.get("qOffset1sn")+"\n" +
+                        "qOffset2sn "+utranRelation.get("qOffset2sn")+"\n" +
+                        "selectionPriority "+utranRelation.get("selectionPriority")+"\n" +
+                        "utranCellRef "+utranRelation.get("utranCellRef")+"\n" +
+                        "end\n\n";
+            //</editor-fold>
+            }
+        }
+        
+        script = "####      Total MOs: "+count+"      ####\n"+script;
+        return script;
+    }
+    
     
     public static void main(String[] args) {
         MongoDB.initializeDB();
 //        System.out.println(generateScriptForSite("UCAI0592","PRX17"));
-        System.out.println(generateCreationOnAllNetwork_Relations("UCAI0592","PRX17","YRX15"));
+        System.out.println(generateCreationOnTarget_RelationsAndExternalCells_Internal("UCAI0592","PRX17","YRX15"));
     }
 }
