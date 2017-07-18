@@ -8,6 +8,8 @@ package com.vodafone.dr.generator;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.model.Filters;
 import static com.mongodb.client.model.Filters.and;
+import com.vodafone.dr.configuration.AppConf;
+import com.vodafone.dr.configuration.DR_Plan;
 import com.vodafone.dr.mongo.MongoDB;
 import org.bson.Document;
 
@@ -17,39 +19,71 @@ import org.bson.Document;
  */
 public class ScriptGenerator {
     
-    public static String generateScriptForSite(String siteName,String sourceRNC,String targetRNC){
+    public static String generateScriptForSite(String siteName,String sourceMTX,String sourceRNC,String targetMTX,String targetRNC){
         StringBuilder builder = new StringBuilder("");
-        builder.append("####  Target RNC:   ").append(targetRNC).append("     #####");
-        builder.append("##### DR Script for Site: ").append(siteName).append(" #####\n");
-        builder.append("#####       IuBLinks       ####").append("\n");
+        builder.append("!!!!  Source MTX:   ").append(sourceMTX).append("     !!!!\n");
+        builder.append("!!!!  Source RNC:   ").append(sourceRNC).append("     !!!!\n");
+        builder.append("!!!!  Target MTX:   ").append(targetMTX).append("     !!!!\n");
+        builder.append("!!!!  Target RNC:   ").append(targetRNC).append("     !!!!\n");
+        builder.append("!!!!  SITE:   ").append(siteName).append("     !!!!\n");
+        builder.append("!!!!       Ura       !!!!").append("\n");
+        builder.append(generateUra()).append("\n");
+        builder.append("!!!!       Location Area       !!!!").append("\n");
+        builder.append(generateLocationArea(siteName, sourceRNC)).append("\n");
+        builder.append("!!!!       IuBLinks       !!!!").append("\n");
         builder.append(generateIubLink(siteName,sourceRNC,targetRNC)).append("\n");
-        builder.append("#####       SAC       ####").append("\n");
+        builder.append("!!!!       SAC       !!!!").append("\n");
         builder.append(generateSac(siteName,sourceRNC,targetRNC)).append("\n");
-        builder.append("#####       External GSM Cells       ####").append("\n");
+        builder.append("!!!!       External GSM Cells       !!!!").append("\n");
         builder.append(generateExternalGsmCells(siteName,sourceRNC,targetRNC)).append("\n");
-        builder.append("#####       Internal Utran Cells       ####").append("\n");
+        builder.append("!!!!       Internal Utran Cells       !!!!").append("\n");
         builder.append(generateInternalCells(siteName,sourceRNC,targetRNC)).append("\n");
-        builder.append("#####       Pch,Fach,Rach       ####").append("\n");
+        builder.append("!!!!       Pch,Fach,Rach       !!!!").append("\n");
         builder.append(generateFachRachPch(siteName,sourceRNC,targetRNC)).append("\n");
-        builder.append("#####       Hsdsch       ####").append("\n");
+        builder.append("!!!!       Hsdsch       !!!!").append("\n");
         builder.append(generateHsdsch(siteName,sourceRNC,targetRNC)).append("\n");
-        builder.append("#####       GSM Relations       ####").append("\n");
+        builder.append("!!!!       GSM Relations       !!!!").append("\n");
         builder.append(generateGsmRelation(siteName,sourceRNC,targetRNC)).append("\n");
-        builder.append("#####       Coverage Relations       ####").append("\n");
+        builder.append("!!!!       Coverage Relations       !!!!").append("\n");
         builder.append(generateCoverageRelation(siteName,sourceRNC,targetRNC)).append("\n");
-        builder.append("#####       Delete Reference from all Network     ####").append("\n");
+        builder.append("!!!!       Delete Reference from all Network     !!!!").append("\n");
         builder.append(generateDeletionOnAllNetwork(siteName,sourceRNC,targetRNC)).append("\n");
-        builder.append("#####       Create External Cells on all Network     ####").append("\n");
+        builder.append("!!!!       Create External Cells on all Network     !!!!").append("\n");
         builder.append(generateCreationOnAllNetwork_ExternalCells(siteName,sourceRNC,targetRNC)).append("\n");
-        builder.append("#####       Create Relations on all Network     ####").append("\n");
+        builder.append("!!!!       Create Relations on all Network     !!!!").append("\n");
         builder.append(generateCreationOnAllNetwork_Relations(siteName,sourceRNC,targetRNC)).append("\n");
-        builder.append("#####       Create External Cells Target RNC     ####").append("\n");
+        builder.append("!!!!       Create External Cells Target RNC     !!!!").append("\n");
         builder.append(generateCreationOnTarget_ExternalCells(siteName,sourceRNC,targetRNC)).append("\n");
-        builder.append("#####       Create External Relations on Target RNC     ####").append("\n");
+        builder.append("!!!!       Create External Relations on Target RNC     !!!!").append("\n");
         builder.append(generateCreationOnTarget_Relations_external(siteName,sourceRNC,targetRNC)).append("\n");
-        builder.append("#########################################\n\n");
+        builder.append("!!!!       Create Internal Relations on Target RNC     !!!!").append("\n");
+        builder.append(generateCreationOnTarget_RelationsAndExternalCells_Internal(siteName,sourceRNC,targetRNC)).append("\n");
+        builder.append("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!#\n\n");
         
         return builder.toString();
+    }
+    
+    public static String generateUra(){
+        return "crn RncFunction=1,Ura=65535\n" +
+                "uraIdentity 65535\n" +
+                "userLabel \n" +
+                "end\n\n";
+    }
+    
+    public static String generateLocationArea(String siteName,String sourceRNC){
+        Document internallCell = MongoDB.getUtranCellCollection().find(
+                and(Filters.regex("_id", ".*"+siteName+".*"),Filters.eq("RNC", sourceRNC))).first();
+        
+        if(internallCell!=null){
+        String lac = internallCell.get("locationAreaRef").toString().replaceAll("LocationArea=", "");
+        return "crn RncFunction=1,LocationArea="+lac+"\n" +
+                "att 1\n" +
+                "lac "+lac+"\n" +
+                "t3212 20\n" +
+                "userLabel \n" +
+                "end\n";
+        }
+        return "Couldn't find cells for site "+siteName+" on RNC "+sourceRNC;
     }
     
     public static String generateInternalCells(String siteName,String sourceRNC,String targetRNC){
@@ -261,7 +295,7 @@ public class ScriptGenerator {
                         "uarfcnDl "+utranCell.get("uarfcnDl")+"\n" +
                         "uarfcnUl "+utranCell.get("uarfcnUl")+"\n" +
                         "updateLocator "+utranCell.get("updateLocator")+"\n" +
-                        "uraRef "+((Document)utranCell.get("uraRef")).get("uraRef")+"\n" +
+                        "uraRef RncFunction=1,Ura=65535 \n"+//((Document)utranCell.get("uraRef")).get("uraRef")+"\n" +
                         "usedFreqThresh2dEcno "+utranCell.get("usedFreqThresh2dEcno")+"\n" +
                         "usedFreqThresh2dRscp "+utranCell.get("usedFreqThresh2dRscp")+"\n" +
                         "userLabel "+utranCell.get("userLabel")+"\n" +
@@ -273,7 +307,7 @@ public class ScriptGenerator {
                     //</editor-fold>
             count++;
         }
-        script = "####      Total MOs: "+count+"      ####\n"+script;
+        script = "!!!!      Total MOs: "+count+"      !!!!\n"+script;
         return script;
     }
     
@@ -322,7 +356,7 @@ public class ScriptGenerator {
             //</editor-fold>
             count++;
         }
-        script = "####      Total MOs: "+count+"      ####\n"+script;
+        script = "!!!!      Total MOs: "+count+"      !!!!\n"+script;
         return script;
     }
     
@@ -343,7 +377,7 @@ public class ScriptGenerator {
             //</editor-fold>
             count++;
         }
-        script = "####      Total MOs: "+count+"      ####\n"+script;
+        script = "!!!!      Total MOs: "+count+"      !!!!\n"+script;
         return script;
     }
     
@@ -372,7 +406,7 @@ public class ScriptGenerator {
             //</editor-fold>
             count++;
         }
-        script = "####      Total MOs: "+count+"      ####\n"+script;
+        script = "!!!!      Total MOs: "+count+"      !!!!\n"+script;
         return script;
     }
     
@@ -429,7 +463,7 @@ public class ScriptGenerator {
             //</editor-fold>
             count++;
         }
-        script = "####      Total MOs: "+count+"      ####\n"+script;
+        script = "!!!!      Total MOs: "+count+"      !!!!\n"+script;
         return script;
     }
     
@@ -464,7 +498,7 @@ public class ScriptGenerator {
             //</editor-fold>
             count++;
         }
-        script = "####      Total MOs: "+count+"      ####\n"+script;
+        script = "!!!!      Total MOs: "+count+"      !!!!\n"+script;
         return script;
     }
     
@@ -486,7 +520,7 @@ public class ScriptGenerator {
             //</editor-fold>
             count++;
         }
-        script = "####      Total MOs: "+count+"      ####\n"+script;
+        script = "!!!!      Total MOs: "+count+"      !!!!\n"+script;
         return script;
     }
     
@@ -512,7 +546,7 @@ public class ScriptGenerator {
             //</editor-fold>
             count++;
         }
-        script = "####      Total MOs: "+count+"      ####\n"+script;
+        script = "!!!!      Total MOs: "+count+"      !!!!\n"+script;
         return script;
     }
     
@@ -531,7 +565,7 @@ public class ScriptGenerator {
             //</editor-fold>
         }
         
-        script = "####      Total MOs: "+count+"      ####\n"+script;
+        script = "!!!!      Total MOs: "+count+"      !!!!\n"+script;
         return script;
     }
     
@@ -577,7 +611,7 @@ public class ScriptGenerator {
             //</editor-fold>
         }
         
-        script = "####      Total MOs: "+count+"      ####\n"+script;
+        script = "!!!!      Total MOs: "+count+"      !!!!\n"+script;
         return script;
     }
     
@@ -607,7 +641,7 @@ public class ScriptGenerator {
             //</editor-fold>
         }
         
-        script = "####      Total MOs: "+count+"      ####\n"+script;
+        script = "!!!!      Total MOs: "+count+"      !!!!\n"+script;
         return script;
     }
     
@@ -656,7 +690,7 @@ public class ScriptGenerator {
         
         }
         
-        script = "####      Total MOs: "+count+"      ####\n"+script;
+        script = "!!!!      Total MOs: "+count+"      !!!!\n"+script;
         return script;
     }
     
@@ -688,7 +722,7 @@ public class ScriptGenerator {
             }
         }
         
-        script = "####      Total MOs: "+count+"      ####\n"+script;
+        script = "!!!!      Total MOs: "+count+"      !!!!\n"+script;
         return script;
     }
     
@@ -698,11 +732,57 @@ public class ScriptGenerator {
                    Filters.eq("RNC", sourceRNC)));
         String script = "";
         int count = 0;
+        Document internalCell = null;
+        String newRNC = null;
         script += "## Execute on RNC: "+targetRNC+"\n";
         for(Document utranRelation : utranRelations){
             if(!utranRelation.get("utranCellRef").toString().contains("ExternalUtranCell=")){
-            //<editor-fold defaultstate="collapsed" desc="Relation Creation">
+            // look for the RNC that contain this cell 
+            internalCell = 
+                    MongoDB.getUtranCellCollection().find(
+                            and(Filters.regex("_id", ".*"+utranRelation.getString("utranCellRef").replaceAll("UtranCell=", "")+".*"),
+                                Filters.eq("RNC", sourceRNC))).first();
+            if(internalCell!=null){
+            // look for its new RNC
+            newRNC = DR_Plan.getTargetRNC(internalCell.getString("UtranCellId"));
+            if(newRNC==null){
+                newRNC = sourceRNC;
+            }
+            if(newRNC!=null){
+            // generate external cell script from the internal cell on the new RNC
             count++;
+            //<editor-fold defaultstate="collapsed" desc="Transform Internal to External">
+            script +=   "crn RncFunction=1,IurLink="+newRNC+"_IurLink,ExternalUtranCell="+internalCell.get("_id").toString().replaceAll(internalCell.get("RNC")+"_", "")+"\n" +
+                        "agpsEnabled "+internalCell.get("agpsEnabled")+"\n" +
+                        "cId "+internalCell.get("cId")+"\n" +
+                        "cellCapability hsdschSupport=0, edchSupport=0 ,edchTti2Support=0 ,enhancedL2Support="+((Document)internalCell.get("Hsdsch")).get("enhancedL2Support")+
+                        ",fdpchSupport="+internalCell.get("fdpchSupport")+
+                        ",cpcSupport="+internalCell.get("cpcSupport")+
+                        ",qam64MimoSupport="+((Document)internalCell.get("Hsdsch")).get("qam64MimoSupport")+"\n" +
+                        "hsAqmCongCtrlSpiSupport "+((Document)internalCell.get("Hsdsch")).get("hsAqmCongCtrlSpiSupport")+"\n" +
+                        "hsAqmCongCtrlSupport "+((Document)internalCell.get("Hsdsch")).get("hsAqmCongCtrlSupport")+"\n" +
+                        "individualOffset "+internalCell.get("individualOffset")+"\n" +
+                        "lac "+internalCell.get("locationAreaRef").toString().replaceAll("LocationArea=", "")+"\n" +
+                        "maxTxPowerUl "+internalCell.get("maxTxPowerUl")+"\n" +
+                        "primaryCpichPower "+internalCell.get("primaryCpichPower")+"\n" +
+                        "primaryScramblingCode "+internalCell.get("primaryScramblingCode")+"\n" +
+                        "qQualMin "+internalCell.get("qQualMin")+"\n" +
+                        "qRxLevMin "+internalCell.get("qRxLevMin")+"\n";
+                if(internalCell.get("routingAreaRef")!=null){
+                    script +="rac "+internalCell.get("routingAreaRef").toString().split(",")[1].replaceAll("RoutingArea=", "")+"\n";
+                }
+             script += "reportingRange1a "+internalCell.get("reportingRange1a")+"\n" +
+                        "reportingRange1b "+internalCell.get("reportingRange1b")+"\n" +
+                        "timeToTrigger1a "+internalCell.get("timeToTrigger1a")+"\n" +
+                        "timeToTrigger1b "+internalCell.get("timeToTrigger1b")+"\n" +
+                        "transmissionScheme "+internalCell.get("transmissionScheme")+"\n" +
+                        "uarfcnDl "+internalCell.get("uarfcnDl")+"\n" +
+                        "uarfcnUl "+internalCell.get("uarfcnUl")+"\n" +
+                        "userLabel "+internalCell.get("userLabel")+"-1\n" +
+                        "end\n\n";
+            //</editor-fold>
+            // generate relation based on the new IuR
+            //<editor-fold defaultstate="collapsed" desc="Relation Creation">
             script +=   "crn RncFunction=1,"+utranRelation.get("UtranRelationId")+"\n" +
                         "hcsSib11Config hcsPrio="+((Document)utranRelation.get("hcsSib11Config")).get("hcsPrio")+
                          ",qHcs="+((Document)utranRelation.get("hcsSib11Config")).get("qHcs")+
@@ -714,20 +794,27 @@ public class ScriptGenerator {
                         "qOffset1sn "+utranRelation.get("qOffset1sn")+"\n" +
                         "qOffset2sn "+utranRelation.get("qOffset2sn")+"\n" +
                         "selectionPriority "+utranRelation.get("selectionPriority")+"\n" +
-                        "utranCellRef "+utranRelation.get("utranCellRef")+"\n" +
+                        "utranCellRef IurLink="+newRNC+"_IURLINK,External"+utranRelation.get("utranCellRef")+"\n" +
                         "end\n\n";
             //</editor-fold>
             }
+            }
+            
+            }
         }
         
-        script = "####      Total MOs: "+count+"      ####\n"+script;
+        script = "!!!!      Total MOs: "+count+"      !!!!\n"+script;
         return script;
     }
     
     
     public static void main(String[] args) {
+        AppConf.configureApp("C:\\Documents\\DR_3G\\DR3G.conf");
+        AppConf.configureDR();
         MongoDB.initializeDB();
-//        System.out.println(generateScriptForSite("UCAI0592","PRX17"));
-        System.out.println(generateCreationOnTarget_RelationsAndExternalCells_Internal("UCAI0592","PRX17","YRX15"));
+        
+//        System.out.println(generateScriptForSite("UCAI3092","KRX12","VRX07"));
+//        System.out.println(generateCreationOnTarget_RelationsAndExternalCells_Internal("UCAI3092","KRX12","VRX07"));
+//        System.out.println(generateCreationOnAllNetwork_ExternalCells("UCAI3092","KRX12","VRX07"));
     }
 }

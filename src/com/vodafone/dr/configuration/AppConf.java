@@ -24,10 +24,12 @@ public class AppConf {
     private static String OSS_PASS;
     private static String OSS_WORKING_DIR;
     private static String workingDir;
+    private static String dr_plan_file_path;
     private static String mydate = (java.text.DateFormat.getDateInstance().format(Calendar.getInstance().getTime())).replaceAll(":", "");
     private static TreeMap<String,Integer> nodes = new TreeMap<String,Integer>();
     
-     public static boolean configureApp(String path){
+    
+    public static boolean configureApp(String path){
         try {
             RandomAccessFile raf = new RandomAccessFile(new File(path), "r");
             String line = null;
@@ -40,6 +42,8 @@ public class AppConf {
                     OSS_IP = line.split("~")[2];
                 }else if(line.contains("OSS_WORKING_DIR")){
                     OSS_WORKING_DIR = line.split("~")[2];
+                }else if(line.contains("DR_PLAN")){
+                    dr_plan_file_path = line.split("~")[2];
                 }else if(line.contains("WORKING_DIR")){
                     workingDir = line.split("~")[2];
                 }else if(line.contains("NODES-START")){
@@ -64,6 +68,9 @@ public class AppConf {
             return true;
     }
 
+    public static void configureDR(){
+        DR_Plan.parsePlan(dr_plan_file_path);
+    }
     public static String getOSS_IP() {
         return OSS_IP;
     }
@@ -111,7 +118,16 @@ public class AppConf {
     public static String getOSS_WORKING_DIR() {
         return OSS_WORKING_DIR;
     }
-    
+
+    public static String getDr_plan_file_path() {
+        return dr_plan_file_path;
+    }
+
+    public static void setDr_plan_file_path(String dr_plan_file_path) {
+        AppConf.dr_plan_file_path = dr_plan_file_path;
+    }
+
+ 
     
      
      
