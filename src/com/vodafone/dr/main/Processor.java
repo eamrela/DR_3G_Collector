@@ -43,11 +43,11 @@ public class Processor {
             System.out.println("Initializing Mongo DB");
             MongoDB.initializeDB();
             
-            workingDir = AppConf.getWorkingDir()+"\\DR_3G_"+AppConf.getMydate();
-//            workingDir = "C:\\tmp\\3G\\DR_3G_Jul 16, 2017";
+//            workingDir = AppConf.getWorkingDir()+"\\DR_3G_"+AppConf.getMydate();
+            workingDir = "C:\\tmp\\3G\\VDF";
             printoutsDir = workingDir+"\\printouts";
             scriptsDir = workingDir+"\\scripts";
-            new File(printoutsDir).mkdirs();
+//            new File(printoutsDir).mkdirs();
             new File(scriptsDir).mkdirs();
             errPW = new PrintWriter(new File(workingDir+"\\error.log"));
         } catch (FileNotFoundException ex) {
@@ -102,6 +102,8 @@ public class Processor {
         try {
             pw = new PrintWriter(targetRNCFile);
             pw.append(siteScript);
+            pw.flush();
+            pw.close();
         } catch (FileNotFoundException ex) {
             Logger.getLogger(Processor.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -120,6 +122,7 @@ public class Processor {
             String conf = null;
             String mode = null;
             String collection = null;
+            boolean collected = false;
             for (int i = 0; i < args.length; i++) {
                 if(args[i].toLowerCase().contains("-conf")){
                     conf = args[i+1];
@@ -131,13 +134,13 @@ public class Processor {
                 }
                 if(args[i].toLowerCase().contains("-db")){
                     collection = args[i+1];
+                    collected = true;
                     System.out.println("Database: "+collection);
                 }
             }
             
             initApp(conf);
             
-            boolean collected = false;
             if(mode.toLowerCase().equals("c")){
                 System.out.println("Running in Collection mode");
                 System.out.println("Calling Collector");
