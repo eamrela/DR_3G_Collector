@@ -43,11 +43,11 @@ public class Processor {
             System.out.println("Initializing Mongo DB");
             MongoDB.initializeDB();
             
-//            workingDir = AppConf.getWorkingDir()+"\\DR_3G_"+AppConf.getMydate();
-            workingDir = "C:\\tmp\\3G\\VDF";
+            workingDir = AppConf.getWorkingDir()+"\\DR_3G_"+AppConf.getMydate();
+//            workingDir = "C:\\tmp\\3G\\VDF";
             printoutsDir = workingDir+"\\printouts";
             scriptsDir = workingDir+"\\scripts";
-//            new File(printoutsDir).mkdirs();
+            new File(printoutsDir).mkdirs();
             new File(scriptsDir).mkdirs();
             errPW = new PrintWriter(new File(workingDir+"\\error.log"));
         } catch (FileNotFoundException ex) {
@@ -111,63 +111,52 @@ public class Processor {
     }
     
     public static void main(String[] args) {
-        args = new String[6];
-        args[0] = "-conf";
-        args[1] = "C:\\Documents\\DR_3G\\DR3G.conf";
-        args[2] = "-mode";
-        args[3] = "g";
-        args[4] = "-db";
-        args[5] = "0";
-        if(args.length>5){
-            String conf = null;
-            String mode = null;
-            String collection = null;
-            boolean collected = false;
-            for (int i = 0; i < args.length; i++) {
-                if(args[i].toLowerCase().contains("-conf")){
-                    conf = args[i+1];
-                    System.out.println("Configuration: "+conf);
-                }
-                if(args[i].toLowerCase().contains("-mode")){
-                    mode = args[i+1];
-                    System.out.println("Mode: "+mode);
-                }
-                if(args[i].toLowerCase().contains("-db")){
-                    collection = args[i+1];
-                    collected = true;
-                    System.out.println("Database: "+collection);
-                }
-            }
-            
-            initApp(conf);
-            
-            if(mode.toLowerCase().equals("c")){
-                System.out.println("Running in Collection mode");
-                System.out.println("Calling Collector");
-                collected = collectPrintout();
-            }
+        
+        
+        if(args.length!=4){
+            System.out.println("Please set the input paramters");
+            System.out.println("Configuration File");
+            System.out.println("Collection Mode: 0/1");
+            System.out.println("Parsing Mode: 0/1");
+            System.out.println("Generation Mode: 0/1");
+            System.exit(1);
+        }
+//        String conf = "C:\\Documents\\DR_3G\\DR3G.conf";
+        
 
-            System.out.println("Checking Collector Status");
-            if(collected && collection.equals("1")){
-                System.out.println("Collector is good, going to Loop on files now");
-                loopAndParse();
-                System.out.println("Finished Parsing Files. ");
-            }
-            
-            if(mode.toLowerCase().equals("g")){
-                generateDR();
-            }
+        String conf = args[0];
+        initApp(conf);
+        
+        String collect = args[1];
+        String parse = args[2];
+        String generate = args[3];
+//        String collect = "0";
+//        String parse = "1";
+//        String generate = "0";
+        boolean collected = false;
+        
+        // Collect 
+        if(collect.equals("1")){
+            System.out.println("Running in Collection mode");
+            System.out.println("Calling Collector");
+            collected = collectPrintout();
+        }else{
+            collected = true;
+        }
+        // Parse
+        System.out.println("Checking Collector Status");
+        if(collected && parse.equals("1")){
+        System.out.println("Collector is good, going to Loop on files now");
+        loopAndParse();
+        System.out.println("Finished Parsing Files. ");
+        }
+        // Generate
+        if(generate.equals("1")){
+            generateDR();
+        }
         
             errPW.flush();
             errPW.close();
-        }else{
-            System.out.println("Please use the application with the below input paramters ");
-            System.out.println("java -jar <APP_NAME> -conf <FILE_PATH> -mode <MODE> -db <1/0>");
-            System.out.println("* -mode c (This mode will collect files only)");
-            System.out.println("* -mode g (This mode will generate files only)");
-            System.out.println("");
-            System.out.println("* -db 1 (This will parse files and load them in database)");
-            System.out.println("* -db 0 (This will NOT parse files and NOT load them in database)");
-        }
+       
     }
 }

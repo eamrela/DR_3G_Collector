@@ -68,7 +68,12 @@ public class Collector implements Runnable, SshListener, SshScriptListener{
                                         "get ,IubLink=\n" +
                                         "get ,ServiceArea=\n" +
                                         "get ,UtranRelation=\n" +
-                                        "get ,GsmRelation=\n" +
+                                        "get ,GsmRelation=\n"+ 
+                                        "get ,NodeSynch=\n" +
+                                        "get ,IubEdch=1\n" +
+                                        "get ,MultiCarrier=\n" +
+                                        "get ,Eul=\n" +
+                                        "get ,EutranFreqRelation=\n" +
                                         "pr IurLink=\n" +
                                         "l-";
             Ssh ssh = null;
@@ -80,6 +85,12 @@ public class Collector implements Runnable, SshListener, SshScriptListener{
             ssh.setReadTimeout(5400000);
             SshScript script = new SshScript(ssh);
             script.addSshScriptListener(this);
+            
+            SshTask TunellingUser = new SshTask("Tunneling1",OSS_SHELL,"ssh "+AppConf.getOSS_UAS_USER()+"@"+AppConf.getOSS_UAS_IP(),":");
+            script.addTask(TunellingUser);
+            
+            SshTask TunellingPass = new SshTask("Tunneling2",":",AppConf.getOSS_UAS_PASS(),OSS_SHELL);
+            script.addTask(TunellingPass);
             
             SshTask File = new SshTask("File check",OSS_SHELL,"mkdir -p /home/"+AppConf.getOSS_USER()+"/"+AppConf.getOSS_WORKING_DIR(),OSS_SHELL);
             script.addTask(File);
@@ -127,7 +138,7 @@ public class Collector implements Runnable, SshListener, SshScriptListener{
             session.setPassword(AppConf.getOSS_PASS());
             session.setConfig("StrictHostKeyChecking", "no");
             session.connect();
-            System.out.println("Connected to " + AppConf.getOSS_IP() + ".");
+            System.out.println("Connected to " + AppConf.getOSS_IP()+ ".");
             channel = session.openChannel("sftp");
             channel.connect();
             channelSftp = (ChannelSftp) channel;

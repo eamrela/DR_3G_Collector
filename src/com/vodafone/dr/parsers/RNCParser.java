@@ -39,6 +39,11 @@ public class RNCParser implements Runnable{
             TreeMap<String,Document> rachItems = new TreeMap<String,Document>();
             TreeMap<String,Document> pchItems = new TreeMap<String,Document>();
             TreeMap<String,Document> hsdschItems = new TreeMap<String,Document>();
+            TreeMap<String,Document> nodeSynchItems = new TreeMap<String,Document>();
+            TreeMap<String,Document> iubEdchItems = new TreeMap<String,Document>();
+            TreeMap<String,Document> multiCarrierItems = new TreeMap<String,Document>();
+            TreeMap<String,Document> eulItems = new TreeMap<String,Document>();
+//            TreeMap<String,Document> eUtranFrequencyItems = new TreeMap<String,Document>();
             List<WriteModel<Document>> utranItems = new ArrayList<WriteModel<Document>>();
             List<WriteModel<Document>> iubLinkItems = new ArrayList<WriteModel<Document>>();
             List<WriteModel<Document>> coverageItems = new ArrayList<WriteModel<Document>>();
@@ -100,9 +105,22 @@ public class RNCParser implements Runnable{
             String extUtranCellkey = null;
             String extUtranCellTmp = null;
             ArrayList<String> extUtranCellReservedBy = null;
+            Document nodeSynch = null;
+            String iubLinkIdNodeSynch = null;
+            String nodeSynchTmp = null;
+            Document iubEdch = null;
+            String iubLinkIdiubEdch = null;
+            String iubEdchTmp = null;
+            Document multiCarrier = null;
+            String multiCarrierUtranCellId = null;
+            Document eul = null;
+            String eulUtranCellId = null;
+            Document eUtranFreq = null;
+            String eUtranFreqUtranCellId = null;
 //</editor-fold>
             
             while((line=raf.readLine())!=null){
+                if(line!=null){
                 //<editor-fold defaultstate="collapsed" desc="UtranCell">
                 if(line.contains("RncFunction=1,UtranCell=") && line.split(",").length==2){
                     if(raf.readLine().contains("========")){
@@ -226,6 +244,8 @@ public class RNCParser implements Runnable{
                 }
 
             //</editor-fold>
+                }
+                if(line!=null){
                 //<editor-fold defaultstate="collapsed" desc="Fach">
             if(line.contains(",Fach=") && line.contains("RncFunction=1,UtranCell=")){
                 fachUtranCellId = RNCName+"_"+line.substring(line.indexOf("UtranCell=")+10, line.indexOf(",Fach="));
@@ -250,6 +270,8 @@ public class RNCParser implements Runnable{
                 }
             }
             //</editor-fold>
+                }
+                if(line!=null){
                 //<editor-fold defaultstate="collapsed" desc="Rach">
             if(line.contains(",Rach=") && line.contains("RncFunction=1,UtranCell=")){
                 rachUtranCellId = RNCName+"_"+line.substring(line.indexOf("UtranCell=")+10, line.indexOf(",Rach="));
@@ -274,6 +296,8 @@ public class RNCParser implements Runnable{
                 }
             }
             //</editor-fold>
+                }
+                if(line!=null){
                 //<editor-fold defaultstate="collapsed" desc="Pch">
             if(line.contains(",Pch=") && line.contains("RncFunction=1,UtranCell=")){
                 pchUtranCellId = RNCName+"_"+line.substring(line.indexOf("UtranCell=")+10, line.indexOf(",Pch="));
@@ -298,8 +322,10 @@ public class RNCParser implements Runnable{
                 }
             }
             //</editor-fold>
+                }
+                if(line!=null){
                 //<editor-fold defaultstate="collapsed" desc="Hsdsch">
-            if(line.contains(",Hsdsch=") && line.contains("RncFunction=1,UtranCell=")){
+            if(line.contains(",Hsdsch=") && !line.contains(",MultiCarrier=") && !line.contains(",Eul=") && line.contains("RncFunction=1,UtranCell=")){
                 hsdschUtranCellId = RNCName+"_"+line.substring(line.indexOf("UtranCell=")+10, line.indexOf(",Hsdsch="));
                 if(raf.readLine().contains("=======")){
                     hsdsch = new Document();
@@ -333,6 +359,8 @@ public class RNCParser implements Runnable{
                 }
             }
             //</editor-fold>
+                }
+                if(line!=null){
                 //<editor-fold defaultstate="collapsed" desc="IubLink">
             if(line.contains("RncFunction=1,IubLink=") && line.split(",").length==2){
                 if(raf.readLine().contains("========")){
@@ -405,6 +433,8 @@ public class RNCParser implements Runnable{
                 }
             }
             //</editor-fold>
+                }
+                if(line!=null){
                 //<editor-fold defaultstate="collapsed" desc="Coverage">
             if(line.contains(",CoverageRelation=") && line.split(",").length==3){
                   coverageId = line.split(",")[1]+","+line.split(",")[2];
@@ -457,6 +487,8 @@ public class RNCParser implements Runnable{
                 }
             }
             //</editor-fold>
+                }
+                if(line!=null){
                 //<editor-fold defaultstate="collapsed" desc="ExternalGSMCells">
             if(line.contains(",ExternalGsmCell=") && line.split(",").length==3){
                 if(raf.readLine().contains("========")){
@@ -496,6 +528,8 @@ public class RNCParser implements Runnable{
                 }
             }
             //</editor-fold>
+                }
+                if(line!=null){
                 //<editor-fold defaultstate="collapsed" desc="SAC">
             if(line.contains(",ServiceArea=") && line.split(",").length==3){
                 sacId = line.split(",")[1]+","+line.split(",")[2];
@@ -536,6 +570,8 @@ public class RNCParser implements Runnable{
                 }
             }
             //</editor-fold>
+                }
+                if(line!=null){
                 //<editor-fold defaultstate="collapsed" desc="UtranRelation">
             if(line.contains(",UtranRelation=") && line.split(",").length==3){
                     utranRelationId = line.split(",")[1]+","+line.split(",")[2];
@@ -588,6 +624,8 @@ public class RNCParser implements Runnable{
                     }
                 }
 //</editor-fold>
+                }
+                if(line!=null){
                 //<editor-fold defaultstate="collapsed" desc="GsmRelation">
                 if(line.contains(",GsmRelation=") && line.split(",").length==3){
                     gsmRelationId = line.split(",")[1]+","+line.split(",")[2];
@@ -640,6 +678,8 @@ public class RNCParser implements Runnable{
                     }
                 }
 //</editor-fold>
+                }
+                if(line!=null){
                 //<editor-fold defaultstate="collapsed" desc="ExternalUtranCell">
                 if(line.contains(",ExternalUtranCell=") && line.split(",").length==3){
                      extUtranCellId = line.split(",")[1]+","+line.split(",")[2];
@@ -713,6 +753,134 @@ public class RNCParser implements Runnable{
                 }
             }
 //</editor-fold>
+                }
+                if(line!=null){
+                //<editor-fold defaultstate="collapsed" desc="EulMultiCarrier">
+                if(line.contains(",MultiCarrier=") && line.contains("RncFunction=1,UtranCell=")){
+                multiCarrierUtranCellId = RNCName+"_"+line.substring(line.indexOf("UtranCell=")+10, line.indexOf(",Hsdsch="));
+                if(raf.readLine().contains("=======")){
+                    multiCarrier = new Document();
+                    multiCarrier.append("utranCellId", multiCarrierUtranCellId);
+                    while((line=raf.readLine())!=null){
+                        if(line.contains("======")){
+                            // commit
+                            multiCarrierItems.put(multiCarrierUtranCellId,multiCarrier);
+                            break;
+                        }else{
+                            line = removeExtraSpaces(line);
+                            String [] valsMultiCarrier = line.split(" ");
+                            if(valsMultiCarrier.length>1){
+                                multiCarrier.append(valsMultiCarrier[0], valsMultiCarrier[1]);
+                            }else if(valsMultiCarrier.length==1){
+                                multiCarrier.append(valsMultiCarrier[0], "");
+                            }
+                        }
+                    }
+                }
+            }
+            //</editor-fold>
+                }
+                if(line!=null){
+                //<editor-fold defaultstate="collapsed" desc="Eul">
+            if(line.contains(",Eul=") && !line.contains(",MultiCarrier=") && line.contains("RncFunction=1,UtranCell=")){
+                eulUtranCellId = RNCName+"_"+line.substring(line.indexOf("UtranCell=")+10, line.indexOf(",Hsdsch="));
+                if(raf.readLine().contains("=======")){
+                    eul = new Document();
+                    eul.append("utranCellId", eulUtranCellId);
+                    while((line=raf.readLine())!=null){
+                        if(line.contains("======")){
+                            // commit
+                            eulItems.put(eulUtranCellId,eul);
+                            break;
+                        }else{
+                            line = removeExtraSpaces(line);
+                            String [] valsEul = line.split(" ");
+                            if(valsEul.length>1){
+                                eul.append(valsEul[0], valsEul[1]);
+                            }else if(valsEul.length==1){
+                                eul.append(valsEul[0], "");
+                            }
+                        }
+                    }
+                }
+            }
+            //</editor-fold>
+                }
+                if(line!=null){
+                //<editor-fold defaultstate="collapsed" desc="NodeSynch">
+                    if(line.contains(",NodeSynch=") && line.contains("RncFunction=1,IubLink=")){
+                    iubLinkIdNodeSynch = RNCName+"_"+line.substring(line.indexOf("IubLink=")+8, line.indexOf(",NodeSynch="));
+                    if(raf.readLine().contains("=======")){
+                    nodeSynch = new Document();
+                    nodeSynch.append("iubLinkId", iubLinkIdNodeSynch);
+                    while((line=raf.readLine())!=null){
+                        if(line.contains("======")){
+                            // commit
+                            nodeSynchItems.put(iubLinkIdNodeSynch,nodeSynch);
+                            break;
+                        }else{
+                            line = removeExtraSpaces(line);
+                            String [] vals = line.split(" ");
+                            if(vals.length==2){
+                            nodeSynch.append(vals[0], vals[1]);
+                            }else if(vals.length==1){
+                            nodeSynch.append(vals[0], "");
+                            }else if(line.contains("i[")){
+                                nodeSynchTmp = "";
+                                for (String val : vals) {
+                                    if(val.matches("\\d+")){
+                                        nodeSynchTmp+=","+val;
+                                    }
+                                }
+                                if(nodeSynchTmp.length()>0){
+                               nodeSynch.append(vals[0], nodeSynchTmp.substring(1));
+                               }
+                                nodeSynchTmp = null;
+                            }
+                        }
+                    }
+                    }
+                }
+//</editor-fold>
+                }
+                if(line!=null){
+                //<editor-fold defaultstate="collapsed" desc="IubEdch">
+                if(line.contains(",IubEdch=") && line.contains("RncFunction=1,IubLink=")){
+                    iubLinkIdiubEdch = RNCName+"_"+line.substring(line.indexOf("IubLink=")+8, line.indexOf(",IubEdch="));
+                    if(raf.readLine().contains("=======")){
+                    iubEdch = new Document();
+                    iubEdch.append("iubLinkId", iubLinkIdiubEdch);
+                    while((line=raf.readLine())!=null){
+                        if(line.contains("======")){
+                            // commit
+                            iubEdchItems.put(iubLinkIdiubEdch,iubEdch);
+                            break;
+                        }else{
+                            line = removeExtraSpaces(line);
+                            String [] vals = line.split(" ");
+                            if(vals.length==2){
+                            iubEdch.append(vals[0], vals[1]);
+                            }else if(vals.length==1){
+                            iubEdch.append(vals[0], "");
+                            }else if(line.contains("i[")){
+                                iubEdchTmp = "";
+                                for (String val : vals) {
+                                    if(val.matches("\\d+")){
+                                        iubEdchTmp+=","+val;
+                                    }
+                                }
+                                if(iubEdchTmp.length()>0){
+                               iubEdch.append(vals[0], iubEdchTmp.substring(1));
+                               }
+                                iubEdchTmp = null;
+                            }
+                        }
+                    }
+                    }
+                }
+//</editor-fold>
+                }
+               
             }
 
                 System.out.println("Finished Parsing\n ======================");
@@ -728,6 +896,11 @@ public class RNCParser implements Runnable{
                 System.out.println("GsmRelation: "+gsmRelationItems.size());
                 System.out.println("UtranRelation: "+utranRelationItems.size());
                 System.out.println("ExternalUtran: "+extUtranItems.size());
+                System.out.println("nodeSynch: "+nodeSynchItems.size());
+                System.out.println("IubEdch: "+iubEdchItems.size());
+                System.out.println("MultiCarrier: "+multiCarrierItems.size());
+                System.out.println("Eul: "+eulItems.size());
+//                System.out.println("EutranFreqRelation: "+eUtranFrequencyItems.size());
 
                 
                 if(!utranItems.isEmpty()){
@@ -792,7 +965,41 @@ public class RNCParser implements Runnable{
                 System.out.println("Inserting externalUtran");
                 MongoDB.getExternalUtranCellCollection().bulkWrite(extUtranItems);
                 }
-                
+                if(!nodeSynchItems.isEmpty()){
+                System.out.println("Inserting NodeSynch");
+                for (Map.Entry<String, Document> entry : nodeSynchItems.entrySet()) {
+                    MongoDB.getIubLinkCollection().updateOne(eq("_id",entry.getKey()),
+                            set("nodeSynch", entry.getValue()));
+                }
+                }
+                if(!iubEdchItems.isEmpty()){
+                System.out.println("Inserting iubEdch");
+                for (Map.Entry<String, Document> entry : iubEdchItems.entrySet()) {
+                    MongoDB.getIubLinkCollection().updateOne(eq("_id",entry.getKey()),
+                            set("iubEdch", entry.getValue()));
+                }
+                }
+                if(!multiCarrierItems.isEmpty()){
+                System.out.println("Inserting multiCarrier");
+                for (Map.Entry<String, Document> entry : multiCarrierItems.entrySet()) {
+                    MongoDB.getUtranCellCollection().updateOne(eq("_id",entry.getKey()),
+                            set("multiCarrier", entry.getValue()));
+                }
+                }
+                if(!eulItems.isEmpty()){
+                System.out.println("Inserting Eul");
+                for (Map.Entry<String, Document> entry : eulItems.entrySet()) {
+                    MongoDB.getUtranCellCollection().updateOne(eq("_id",entry.getKey()),
+                            set("eul", entry.getValue()));
+                }
+                }
+//                if(!eUtranFrequencyItems.isEmpty()){
+//                System.out.println("Inserting Eul");
+//                for (Map.Entry<String, Document> entry : eUtranFrequencyItems.entrySet()) {
+//                    MongoDB.getUtranCellCollection().updateOne(eq("_id",entry.getKey()),
+//                            set("EutranFreqRelation", entry.getValue()));
+//                }
+//                }
         } catch (Exception ex) {
             Logger.getLogger(RNCParser.class.getName()).log(Level.SEVERE, null, ex);
         } 
@@ -1609,6 +1816,10 @@ public class RNCParser implements Runnable{
         }
     }
     
+    
+     
+     
+     
     private static String removeExtraSpaces(String str){
         str = str.replaceAll(" +", " ");
         return str.trim();

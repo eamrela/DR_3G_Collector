@@ -22,6 +22,9 @@ public class AppConf {
     private static String OSS_IP;
     private static String OSS_USER;
     private static String OSS_PASS;
+    private static String OSS_UAS_IP;
+    private static String OSS_UAS_USER;
+    private static String OSS_UAS_PASS;
     private static String OSS_WORKING_DIR;
     private static String workingDir;
     private static String dr_plan_file_path;
@@ -40,7 +43,15 @@ public class AppConf {
                     OSS_PASS = line.split("~")[2];
                 }else if(line.contains("OSS_IP")){
                     OSS_IP = line.split("~")[2];
-                }else if(line.contains("OSS_WORKING_DIR")){
+                }
+                if(line.contains("OSS_UAS_USER")){
+                    OSS_UAS_USER = line.split("~")[2];
+                }else if(line.contains("OSS_UAS_PASS")){
+                    OSS_UAS_PASS = line.split("~")[2];
+                }else if(line.contains("OSS_UAS_IP")){
+                    OSS_UAS_IP = line.split("~")[2];
+                }
+                else if(line.contains("OSS_WORKING_DIR")){
                     OSS_WORKING_DIR = line.split("~")[2];
                 }else if(line.contains("DR_PLAN")){
                     dr_plan_file_path = line.split("~")[2];
@@ -127,7 +138,19 @@ public class AppConf {
         AppConf.dr_plan_file_path = dr_plan_file_path;
     }
 
- 
+    public static String getOSS_UAS_IP() {
+        return OSS_UAS_IP;
+    }
+
+    public static String getOSS_UAS_PASS() {
+        return OSS_UAS_PASS;
+    }
+
+    public static String getOSS_UAS_USER() {
+        return OSS_UAS_USER;
+    }
+
+    
     
      
      

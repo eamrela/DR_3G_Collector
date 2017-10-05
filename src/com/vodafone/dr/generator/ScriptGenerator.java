@@ -32,6 +32,8 @@ public class ScriptGenerator {
         builder.append(generateLocationArea(siteName, sourceRNC)).append("\n");
         builder.append("!!!!       IuBLinks       !!!!").append("\n");
         builder.append(generateIubLink(siteName,sourceRNC,targetRNC)).append("\n");
+        builder.append("!!!!       NodeSynch / Edch       !!!!").append("\n");
+        builder.append(generateNodeSynchAndEdch(siteName,sourceRNC,targetRNC)).append("\n");
         builder.append("!!!!       SAC       !!!!").append("\n");
         builder.append(generateSac(siteName,sourceRNC,targetRNC)).append("\n");
         builder.append("!!!!       External GSM Cells       !!!!").append("\n");
@@ -42,6 +44,8 @@ public class ScriptGenerator {
         builder.append(generateFachRachPch(siteName,sourceRNC,targetRNC)).append("\n");
         builder.append("!!!!       Hsdsch       !!!!").append("\n");
         builder.append(generateHsdsch(siteName,sourceRNC,targetRNC)).append("\n");
+        builder.append("!!!!       MultiCarrier and EUL       !!!!").append("\n");
+        builder.append(generateMultiCarrierAndEUL(siteName,sourceRNC,targetRNC)).append("\n");
         builder.append("!!!!       GSM Relations       !!!!").append("\n");
         builder.append(generateGsmRelation(siteName,sourceRNC,targetRNC)).append("\n");
         builder.append("!!!!       Coverage Relations       !!!!").append("\n");
@@ -58,6 +62,10 @@ public class ScriptGenerator {
         builder.append(generateCreationOnTarget_Relations_external(siteName,sourceRNC,targetRNC)).append("\n");
         builder.append("!!!!       Create Internal Relations on Target RNC     !!!!").append("\n");
         builder.append(generateCreationOnTarget_RelationsAndExternalCells_Internal(siteName,sourceRNC,targetRNC)).append("\n");
+        builder.append("!!!!       Power and DirectedRetry     !!!!").append("\n");
+        builder.append(generatePowerAndDirectedRetry(siteName,sourceRNC,targetRNC)).append("\n");
+        builder.append("!!!!       LTE     !!!!").append("\n");
+        builder.append(generateEutranFreqRelation(siteName,sourceRNC,targetRNC)).append("\n");
         builder.append("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!#\n\n");
         
         return builder.toString();
@@ -106,7 +114,7 @@ public class ScriptGenerator {
                         "admBlockRedirection gsmRrc="+((Document)utranCell.get("admBlockRedirection")).get("gsmRrc")+
                         ",rrc="+((Document)utranCell.get("admBlockRedirection")).get("rrc")+
                         ",speech="+((Document)utranCell.get("admBlockRedirection")).get("speech")+"\n" +
-                        "administrativeState "+utranCell.get("administrativeState")+"\n" +
+                        "administrativeState 0\n" +
                         "agpsEnabled "+utranCell.get("agpsEnabled")+"\n" +
                         "amrNbSelector "+utranCell.get("amrNbSelector")+"\n" +
                         "amrWbRateDlMax "+utranCell.get("amrWbRateDlMax")+"\n" +
@@ -319,8 +327,8 @@ public class ScriptGenerator {
         for(Document iubLink : iubLinks){
             //<editor-fold defaultstate="collapsed" desc="comment">
             script += "crn RncFunction=1,IubLink="+iubLink.get("IubLinkId")+"\n" +
-                    "administrativeState "+iubLink.get("administrativeState")+"\n" +
-                    "atmUserPlaneTermSubrackRef "+iubLink.get("atmUserPlaneTermSubrackRef")+"\n" +
+                    "administrativeState 0\n" +
+                    "atmUserPlaneTermSubrackRef Subrack=MS\n" +
                     "controlPlaneTransportOption atm="+((Document)iubLink.get("controlPlaneTransportOption")).get("atm")
                    +",ipv4="+((Document)iubLink.get("controlPlaneTransportOption")).get("ipv4")+"\n" +
                     "dlHwAdm "+iubLink.get("dlHwAdm")+"\n" +
@@ -419,7 +427,7 @@ public class ScriptGenerator {
             //<editor-fold defaultstate="collapsed" desc="comment">
             // PCH
             script +=   "crn RncFunction=1,UtranCell="+((Document)uranCell.get("pch")).get("utranCellId").toString().replaceAll(sourceRNC+"_", "")+",Pch="+((Document)uranCell.get("pch")).get("PchId")+"\n" +
-                        "administrativeState "+((Document)uranCell.get("pch")).get("administrativeState")+"\n" +
+                        "administrativeState 0\n" +
                         "pchPower "+((Document)uranCell.get("pch")).get("pchPower")+"\n" +
                         "pichPower "+((Document)uranCell.get("pch")).get("pichPower")+"\n" +
                         "sccpchOffset "+((Document)uranCell.get("pch")).get("sccpchOffset")+"\n" +
@@ -428,7 +436,7 @@ public class ScriptGenerator {
                         "";
             // Rach
             script +=   "crn RncFunction=1,UtranCell="+((Document)uranCell.get("rach")).get("utranCellId").toString().replaceAll(sourceRNC+"_", "")+",Rach="+((Document)uranCell.get("rach")).get("RachId")+"\n" +
-                        "administrativeState "+((Document)uranCell.get("rach")).get("administrativeState")+"\n" +
+                        "administrativeState 0\n" +
                         "aichPower "+((Document)uranCell.get("rach")).get("aichPower")+"\n" +
                         "aichTransmissionTiming "+((Document)uranCell.get("rach")).get("aichTransmissionTiming")+"\n" +
                         "constantValueCprach "+((Document)uranCell.get("rach")).get("constantValueCprach")+"\n" +
@@ -448,7 +456,7 @@ public class ScriptGenerator {
                         "";
             // Fach
             script +=   "crn RncFunction=1,UtranCell="+((Document)uranCell.get("fach")).get("utranCellId").toString().replaceAll(sourceRNC+"_", "")+",Fach="+((Document)uranCell.get("fach")).get("FachId")+"\n" +
-                        "administrativeState "+((Document)uranCell.get("fach")).get("administrativeState")+"\n" +
+                        "administrativeState 0\n" +
                         "maxFach1Power "+((Document)uranCell.get("fach")).get("maxFach1Power")+"\n" +
                         "maxFach2Power "+((Document)uranCell.get("fach")).get("maxFach2Power")+"\n" +
                         "pOffset1Fach "+((Document)uranCell.get("fach")).get("pOffset1Fach")+"\n" +
@@ -475,7 +483,7 @@ public class ScriptGenerator {
         for(Document uranCell : utranCells){
             //<editor-fold defaultstate="collapsed" desc="comment">
             script +=   "crn RncFunction=1,UtranCell="+((Document)uranCell.get("Hsdsch")).get("utranCellId").toString().replaceAll(sourceRNC+"_", "")+",Hsdsch="+((Document)uranCell.get("Hsdsch")).get("HsdschId")+"\n" +
-                        "administrativeState "+((Document)uranCell.get("Hsdsch")).get("administrativeState")+"\n" +
+                        "administrativeState 0\n" +
                         "codeThresholdPdu656 "+((Document)uranCell.get("Hsdsch")).get("codeThresholdPdu656")+"\n" +
                         "cqiFeedbackCycle "+((Document)uranCell.get("Hsdsch")).get("cqiFeedbackCycle")+"\n" +
                         "deltaAck1 "+((Document)uranCell.get("Hsdsch")).get("deltaAck1")+"\n" +
@@ -495,6 +503,124 @@ public class ScriptGenerator {
                         "\n" +
                         "\n" +
                         "";
+            //</editor-fold>
+            count++;
+        }
+        script = "!!!!      Total MOs: "+count+"      !!!!\n"+script;
+        return script;
+    }
+    
+    public static String generateMultiCarrierAndEUL(String siteName,String sourceRNC,String targetRNC){
+        FindIterable<Document> utranCells = MongoDB.getUtranCellCollection().find(
+                and(Filters.regex("_id", ".*"+siteName+".*"),Filters.eq("RNC", sourceRNC)));
+        String script = "";
+        int count = 0;
+        for(Document uranCell : utranCells){
+            //<editor-fold defaultstate="collapsed" desc="comment">
+            script += 
+                    "ld RncFunction=1,UtranCell="+((Document)uranCell.get("multiCarrier")).get("utranCellId").toString().replaceAll(sourceRNC+"_", "")+",Hsdsch=1,Eul=1,MultiCarrier=1" +
+                    "\n" +
+                    "crn RncFunction=1,UtranCell="+((Document)uranCell.get("eul")).get("utranCellId").toString().replaceAll(sourceRNC+"_", "")+",Hsdsch=1,Eul=1 " +
+                    "administrativeState 0 " +
+                    "eulDchBalancingEnabled "+((Document)uranCell.get("eul")).get("eulDchBalancingEnabled")+" \n" +
+                    "eulDchBalancingLoad "+((Document)uranCell.get("eul")).get("eulDchBalancingLoad")+" \n" +
+                    "eulDchBalancingOverload "+((Document)uranCell.get("eul")).get("eulDchBalancingOverload")+" \n" +
+                    "eulDchBalancingReportPeriod "+((Document)uranCell.get("eul")).get("eulDchBalancingReportPeriod")+" \n" +
+                    "eulDchBalancingSuspendDownSw "+((Document)uranCell.get("eul")).get("eulDchBalancingSuspendDownSw")+" \n" +
+                    "eulDchBalancingTimerNg "+((Document)uranCell.get("eul")).get("eulDchBalancingTimerNg")+" \n" +
+                    "eulLoadTriggeredSoftCong "+((Document)uranCell.get("eul")).get("eulLoadTriggeredSoftCong")+" \n" +
+                    "eulMaxTargetRtwp "+((Document)uranCell.get("eul")).get("eulMaxTargetRtwp")+" \n" +
+                    "numEagchCodes "+((Document)uranCell.get("eul")).get("numEagchCodes")+" \n" +
+                    "numEhichErgchCodes "+((Document)uranCell.get("eul")).get("numEhichErgchCodes")+" \n" +
+                    "pathlossThresholdEulTti2 "+((Document)uranCell.get("eul")).get("pathlossThresholdEulTti2")+" \n" +
+                    "releaseAseUlNg "+((Document)uranCell.get("eul")).get("releaseAseUlNg")+" \n" +
+                    "threshEulTti2Ecno "+((Document)uranCell.get("eul")).get("threshEulTti2Ecno")+" \n" +
+                    "userLabel "+((Document)uranCell.get("eul")).get("userLabel")+"\n" +
+                    "end";
+            //</editor-fold>
+            count++;
+        }
+        script = "!!!!      Total MOs: "+count+"      !!!!\n"+script;
+        return script;
+    }
+    
+    public static String generateNodeSynchAndEdch(String siteName,String sourceRNC,String targetRNC){
+        FindIterable<Document> iubLinks = MongoDB.getIubLinkCollection().find(
+                and(Filters.regex("reservedBy", ".*"+siteName+".*"),Filters.eq("RNC", sourceRNC)));
+        String script = "";
+        String iubLinkId="";
+        String nodeSynch="";
+        String iubEdch="";
+        int count = 0;
+        for(Document iubLink : iubLinks){
+            //<editor-fold defaultstate="collapsed" desc="comment">
+            iubLinkId = ((Document)iubLink.get("nodeSynch")).get("iubLinkId").toString().replaceAll(sourceRNC+"_", "");
+            nodeSynch = ((Document)iubLink.get("nodeSynch")).get("NodeSynchId")+"";
+            script += 
+                    "ld RncFunction=1,IubLink="+iubLinkId+",NodeSynch="+nodeSynch+" \n" +
+                    "lset RncFunction=1,IubLink="+iubLinkId+",NodeSynch="+nodeSynch+"$ fixedWindowSizeInit "+((Document)iubLink.get("nodeSynch")).get("fixedWindowSizeInit")+"\n" +
+                    "lset RncFunction=1,IubLink="+iubLinkId+",NodeSynch="+nodeSynch+"$ fixedWindowSizeSup "+((Document)iubLink.get("nodeSynch")).get("fixedWindowSizeSup")+"\n" +
+                    "lset RncFunction=1,IubLink="+iubLinkId+",NodeSynch="+nodeSynch+"$ maxAllowedIubRtt "+((Document)iubLink.get("nodeSynch")).get("maxAllowedIubRtt")+"\n" +
+                    "lset RncFunction=1,IubLink="+iubLinkId+",NodeSynch="+nodeSynch+"$ phaseDiffThreshold "+((Document)iubLink.get("nodeSynch")).get("phaseDiffThreshold")+"\n" +
+                    "lset RncFunction=1,IubLink="+iubLinkId+",NodeSynch="+nodeSynch+"$ sampleIntervalInit "+((Document)iubLink.get("nodeSynch")).get("sampleIntervalInit")+"\n" +
+                    "lset RncFunction=1,IubLink="+iubLinkId+",NodeSynch="+nodeSynch+"$ sampleIntervalSup "+((Document)iubLink.get("nodeSynch")).get("sampleIntervalSup")+"\n" +
+                    "lset RncFunction=1,IubLink="+iubLinkId+",NodeSynch="+nodeSynch+"$ slidingWindowSize "+((Document)iubLink.get("nodeSynch")).get("slidingWindowSize")+"\n" +
+                    "lset RncFunction=1,IubLink="+iubLinkId+",NodeSynch="+nodeSynch+"$ transportDelayMeasDiscRatio "+((Document)iubLink.get("nodeSynch")).get("transportDelayMeasDiscRatio")+"\n" +
+                    "lset RncFunction=1,IubLink="+iubLinkId+",NodeSynch="+nodeSynch+"$ userLabel "+((Document)iubLink.get("nodeSynch")).get("userLabel")+"\n\n";
+            iubLinkId = ((Document)iubLink.get("iubEdch")).get("iubLinkId").toString().replaceAll(sourceRNC+"_", "");
+            iubEdch = ((Document)iubLink.get("iubEdch")).get("IubEdchId")+"";
+            script +=   "crn RncFunction=1,IubLink="+iubLinkId+",IubEdch="+iubEdch+"\n" +
+                        "edchDataFrameDelayThreshold "+((Document)iubLink.get("iubEdch")).get("edchDataFrameDelayThreshold")+"\n" +
+                        "userLabel "+((Document)iubLink.get("iubEdch")).get("userLabel")+"\n" +
+                        "end";
+            //</editor-fold>
+            count++;
+        }
+        script = "!!!!      Total MOs: "+count+"      !!!!\n"+script;
+        return script;
+    }
+    
+    public static String generatePowerAndDirectedRetry(String siteName,String sourceRNC,String targetRNC){
+        FindIterable<Document> utranCells = MongoDB.getUtranCellCollection().find(
+                and(Filters.regex("_id", ".*"+siteName+".*"),Filters.eq("RNC", sourceRNC)));
+        String script = "";
+        int count = 0;
+        for(Document uranCell : utranCells){
+            //<editor-fold defaultstate="collapsed" desc="comment">
+            script += "lset RncFunction=1,UtranCell="+((Document)uranCell.get("UtranCellId"))+"$ pwrAdm "+((Document)uranCell.get("pwrAdm"))+"";
+            script += "lset RncFunction=1,UtranCell="+((Document)uranCell.get("UtranCellId"))+"$ interRate "+((Document)uranCell.get("interRate"))+"";
+            script += "lset RncFunction=1,UtranCell="+((Document)uranCell.get("UtranCellId"))+"$ maxPwrMax "+((Document)uranCell.get("maxPwrMax"))+"\n\n";
+            script += "lset UtranCell="+((Document)uranCell.get("UtranCellId"))+" directedRetryTarget"+((Document)uranCell.get("directedRetryTarget"))+"";
+            //</editor-fold>
+            count++;
+        }
+        script = "!!!!      Total MOs: "+count+"      !!!!\n"+script;
+        return script;
+    }
+    
+    public static String generateEutranFreqRelation(String siteName,String sourceRNC,String targetRNC){
+        FindIterable<Document> utranCells = MongoDB.getUtranCellCollection().find(
+                and(Filters.regex("_id", ".*"+siteName+".*"),Filters.eq("RNC", sourceRNC)));
+        String script = "";
+        int count = 0;
+        for(Document uranCell : utranCells){
+            //<editor-fold defaultstate="collapsed" desc="comment">
+            script +=   "crn RncFunction=1,UtranCell="+((Document)uranCell.get("EutranFreqRelation")).get("utranCellId").toString().replaceAll(sourceRNC+"_", "")+",EutranFreqRelation="+((Document)uranCell.get("EutranFreqRelation")).get("EutranFreqRelation")+"\n" +
+                        "barredCnOperatorRef "+((Document)uranCell.get("EutranFreqRelation")).get("barredCnOperatorRef")+"\n" +
+                        "blacklistedCell "+((Document)uranCell.get("EutranFreqRelation")).get("blacklistedCell")+"\n" +
+                        "cellReselectionPriority "+((Document)uranCell.get("EutranFreqRelation")).get("cellReselectionPriority")+"\n" +
+                        "eutranFrequencyRef EutraNetwork="+((Document)((Document)uranCell.get("EutranFreqRelation")).get("eutranFrequencyRef")).get("EutraNetwork")+
+                                ",EutranFrequency="+((Document)((Document)uranCell.get("EutranFreqRelation")).get("eutranFrequencyRef")).get("EutranFrequency")+"\n" +
+                        "qQualMin "+((Document)uranCell.get("EutranFreqRelation")).get("qQualMin")+"\n" +
+                        "qRxLevMin "+((Document)uranCell.get("EutranFreqRelation")).get("qRxLevMin")+"\n" +
+                        "redirectionOrder "+((Document)uranCell.get("EutranFreqRelation")).get("redirectionOrder")+"\n" +
+                        "thresh2dRwr "+((Document)uranCell.get("EutranFreqRelation")).get("thresh2dRwr")+"\n" +
+                        "threshHigh "+((Document)uranCell.get("EutranFreqRelation")).get("threshHigh")+"\n" +
+                        "threshHigh2 "+((Document)uranCell.get("EutranFreqRelation")).get("threshHigh2")+"\n" +
+                        "threshLow "+((Document)uranCell.get("EutranFreqRelation")).get("threshLow")+"\n" +
+                        "threshLow2 "+((Document)uranCell.get("EutranFreqRelation")).get("threshLow2")+"\n" +
+                        "userLabel "+((Document)uranCell.get("EutranFreqRelation")).get("userLabel")+"\n" +
+                        "end";
             //</editor-fold>
             count++;
         }
